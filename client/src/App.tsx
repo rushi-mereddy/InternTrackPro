@@ -1,30 +1,32 @@
 import { Switch, Route } from "wouter";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "./components/ui/toaster";
+import { TooltipProvider } from "./components/ui/tooltip";
 
 // Layout
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
+import Header from "./components/layout/Header";
+import Footer from "./components/layout/Footer";
 
 // Pages
-import Home from "@/pages/Home";
-import Internships from "@/pages/Internships";
-import InternshipDetail from "@/pages/InternshipDetail";
-import Jobs from "@/pages/Jobs";
-import JobDetail from "@/pages/JobDetail";
-import Courses from "@/pages/Courses";
-import CourseDetail from "@/pages/CourseDetail";
-import Dashboard from "@/pages/Dashboard";
-import Profile from "@/pages/Profile";
-import Applications from "@/pages/Applications";
-import Login from "@/pages/Login";
-import Register from "@/pages/Register";
-import NotFound from "@/pages/not-found";
+import Home from "./pages/Home";
+import Internships from "./pages/Internships";
+import InternshipDetail from "./pages/InternshipDetail";
+import Jobs from "./pages/Jobs";
+import JobDetail from "./pages/JobDetail";
+import Courses from "./pages/Courses";
+import CourseDetail from "./pages/CourseDetail";
+import Dashboard from "./pages/Dashboard";
+import Profile from "./pages/Profile";
+import Applications from "./pages/Applications";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import NotFound from "./pages/not-found";
 import { useAuth } from "./context/AuthContext";
 
 function App() {
-  const { user, loading } = useAuth();
-
+  console.log("App component rendering");
+  const auth = useAuth();
+  console.log("Auth context in App:", auth);
+  
   return (
     <TooltipProvider>
       <div className="min-h-screen flex flex-col bg-gray-50 text-gray-800">
@@ -44,7 +46,7 @@ function App() {
             <Route path="/register" component={Register} />
             
             {/* Protected Routes - Only accessible if user is logged in */}
-            {user && (
+            {auth.user && (
               <Switch>
                 <Route path="/dashboard" component={Dashboard} />
                 <Route path="/profile" component={Profile} />

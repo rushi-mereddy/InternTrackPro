@@ -20,7 +20,8 @@ import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import MemoryStore from "memorystore";
 
-const THIRTY_DAYS = 1000 * 60 * 60 * 24 * 30;
+// Using a smaller value to avoid TimeoutOverflowWarning
+const THIRTY_DAYS = 1000 * 60 * 60 * 24 * 7; // One week instead of 30 days
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);

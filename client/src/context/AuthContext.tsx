@@ -1,19 +1,30 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { AuthContextType, User, RegisterFormData } from "@/lib/types";
-import { apiRequest } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
+import { AuthContextType, User, RegisterFormData } from "../lib/types";
+import { apiRequest } from "../lib/queryClient";
+import { useToast } from "../hooks/use-toast";
 
-// Create the context
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+console.log("AuthContext.tsx: Loading module");
+
+// Create the context with a default value
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  loading: false,
+  login: async () => { throw new Error("Not implemented"); },
+  register: async () => { throw new Error("Not implemented"); },
+  logout: async () => { throw new Error("Not implemented"); },
+  updateUser: async () => { throw new Error("Not implemented"); }
+});
 
 // Provider component
 export function AuthProvider({ children }: { children: ReactNode }) {
+  console.log("AuthProvider: Component rendering");
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const { toast } = useToast();
 
   // Check if user is already logged in
   useEffect(() => {
+    console.log("AuthProvider: Running useEffect");
     async function checkAuthStatus() {
       try {
         const response = await fetch('/api/auth/me', {
@@ -144,14 +155,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     updateUser,
   };
 
+  console.log("AuthProvider: Providing context", value);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 // Custom hook for using the auth context
 export function useAuth() {
+  console.log("useAuth: Hook called");
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
+  console.log("useAuth: Context value", context);
   return context;
 }

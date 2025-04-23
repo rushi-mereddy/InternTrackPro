@@ -7,15 +7,39 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 // Date formatter
-export function formatDate(date: Date | string): string {
-  const parsedDate = typeof date === 'string' ? parseISO(date) : date;
-  return format(parsedDate, 'dd MMM yyyy');
+export function formatDate(date: Date | string | undefined): string {
+  if (!date) return 'Unknown date';
+  
+  try {
+    const parsedDate = typeof date === 'string' ? parseISO(date) : date;
+    // Check if the date is valid before formatting
+    if (isNaN(parsedDate.getTime())) {
+      console.warn('Invalid date value:', date);
+      return 'Invalid date';
+    }
+    return format(parsedDate, 'dd MMM yyyy');
+  } catch (error) {
+    console.error('Error formatting date:', error, date);
+    return 'Invalid date';
+  }
 }
 
 // Distance to now formatter
-export function formatDateToNow(date: Date | string): string {
-  const parsedDate = typeof date === 'string' ? parseISO(date) : date;
-  return formatDistanceToNow(parsedDate, { addSuffix: true });
+export function formatDateToNow(date: Date | string | undefined): string {
+  if (!date) return 'Unknown date';
+  
+  try {
+    const parsedDate = typeof date === 'string' ? parseISO(date) : date;
+    // Check if the date is valid before formatting
+    if (isNaN(parsedDate.getTime())) {
+      console.warn('Invalid date value:', date);
+      return 'Invalid date';
+    }
+    return formatDistanceToNow(parsedDate, { addSuffix: true });
+  } catch (error) {
+    console.error('Error formatting date:', error, date);
+    return 'Invalid date';
+  }
 }
 
 // Format price 
@@ -63,12 +87,24 @@ export function formatStipend(amount?: number, currency: string = 'INR'): string
 export function isDeadlineApproaching(deadline?: Date | string): boolean {
   if (!deadline) return false;
   
-  const parsedDeadline = typeof deadline === 'string' ? parseISO(deadline) : deadline;
-  const now = new Date();
-  const threeDaysFromNow = new Date();
-  threeDaysFromNow.setDate(now.getDate() + 3);
-  
-  return isAfter(parsedDeadline, now) && isBefore(parsedDeadline, threeDaysFromNow);
+  try {
+    const parsedDeadline = typeof deadline === 'string' ? parseISO(deadline) : deadline;
+    
+    // Check if the date is valid
+    if (isNaN(parsedDeadline.getTime())) {
+      console.warn('Invalid deadline value:', deadline);
+      return false;
+    }
+    
+    const now = new Date();
+    const threeDaysFromNow = new Date();
+    threeDaysFromNow.setDate(now.getDate() + 3);
+    
+    return isAfter(parsedDeadline, now) && isBefore(parsedDeadline, threeDaysFromNow);
+  } catch (error) {
+    console.error('Error checking deadline approach:', error, deadline);
+    return false;
+  }
 }
 
 // Extract initials from name
