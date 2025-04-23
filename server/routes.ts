@@ -18,7 +18,8 @@ import {
 import session from "express-session";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
-import MemoryStore from "memorystore";
+import ConnectPgSimple from "connect-pg-simple";
+import { pool } from "./db";
 
 // Using a smaller value to avoid TimeoutOverflowWarning
 const THIRTY_DAYS = 1000 * 60 * 60 * 24 * 7; // One week instead of 30 days
@@ -26,8 +27,8 @@ const THIRTY_DAYS = 1000 * 60 * 60 * 24 * 7; // One week instead of 30 days
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
 
-  // Setup session storage
-  const SessionStore = MemoryStore(session);
+  // Setup session storage with PostgreSQL
+  const PgSession = ConnectPgSimple(session);
 
   // Configure session middleware
   app.use(session({
@@ -37,8 +38,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     cookie: {
       maxAge: THIRTY_DAYS
     },
-    store: new SessionStore({
-      checkPeriod: THIRTY_DAYS
+    store: new PgSession({
+      pool,
+      // Table name for storing sessions (will be created automatically)
+      tableName: 'session',
+      createTableIfMissing: true
     })
   }));
 

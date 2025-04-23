@@ -882,4 +882,373 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Database implementation
+import { db } from './db';
+import { eq, and, isNull, desc } from 'drizzle-orm';
+
+export class DatabaseStorage implements IStorage {
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async createUser(user: InsertUser): Promise<User> {
+    const [newUser] = await db.insert(users).values(user).returning();
+    return newUser;
+  }
+
+  async updateUser(id: number, userData: Partial<User>): Promise<User | undefined> {
+    const [updatedUser] = await db.update(users)
+      .set(userData)
+      .where(eq(users.id, id))
+      .returning();
+    return updatedUser;
+  }
+
+  async getStudentProfile(id: number): Promise<StudentProfile | undefined> {
+    const [profile] = await db.select().from(studentProfiles).where(eq(studentProfiles.id, id));
+    return profile;
+  }
+
+  async getStudentProfileByUserId(userId: number): Promise<StudentProfile | undefined> {
+    const [profile] = await db.select().from(studentProfiles).where(eq(studentProfiles.userId, userId));
+    return profile;
+  }
+
+  async createStudentProfile(profile: InsertStudentProfile): Promise<StudentProfile> {
+    const [newProfile] = await db.insert(studentProfiles).values(profile).returning();
+    return newProfile;
+  }
+
+  async updateStudentProfile(id: number, profileData: Partial<StudentProfile>): Promise<StudentProfile | undefined> {
+    const [updatedProfile] = await db.update(studentProfiles)
+      .set(profileData)
+      .where(eq(studentProfiles.id, id))
+      .returning();
+    return updatedProfile;
+  }
+
+  async getEmployerProfile(id: number): Promise<EmployerProfile | undefined> {
+    const [profile] = await db.select().from(employerProfiles).where(eq(employerProfiles.id, id));
+    return profile;
+  }
+
+  async getEmployerProfileByUserId(userId: number): Promise<EmployerProfile | undefined> {
+    const [profile] = await db.select().from(employerProfiles).where(eq(employerProfiles.userId, userId));
+    return profile;
+  }
+
+  async createEmployerProfile(profile: InsertEmployerProfile): Promise<EmployerProfile> {
+    const [newProfile] = await db.insert(employerProfiles).values(profile).returning();
+    return newProfile;
+  }
+
+  async updateEmployerProfile(id: number, profileData: Partial<EmployerProfile>): Promise<EmployerProfile | undefined> {
+    const [updatedProfile] = await db.update(employerProfiles)
+      .set(profileData)
+      .where(eq(employerProfiles.id, id))
+      .returning();
+    return updatedProfile;
+  }
+
+  async getSkillsByStudentId(studentId: number): Promise<Skill[]> {
+    return db.select().from(skills).where(eq(skills.studentId, studentId));
+  }
+
+  async createSkill(skill: InsertSkill): Promise<Skill> {
+    const [newSkill] = await db.insert(skills).values(skill).returning();
+    return newSkill;
+  }
+
+  async updateSkill(id: number, skillData: Partial<Skill>): Promise<Skill | undefined> {
+    const [updatedSkill] = await db.update(skills)
+      .set(skillData)
+      .where(eq(skills.id, id))
+      .returning();
+    return updatedSkill;
+  }
+
+  async deleteSkill(id: number): Promise<boolean> {
+    const result = await db.delete(skills).where(eq(skills.id, id));
+    return true; // In PostgreSQL with Drizzle, this doesn't return affected rows count
+  }
+
+  async getExperiencesByStudentId(studentId: number): Promise<Experience[]> {
+    return db.select().from(experiences).where(eq(experiences.studentId, studentId));
+  }
+
+  async createExperience(experience: InsertExperience): Promise<Experience> {
+    const [newExperience] = await db.insert(experiences).values(experience).returning();
+    return newExperience;
+  }
+
+  async updateExperience(id: number, experienceData: Partial<Experience>): Promise<Experience | undefined> {
+    const [updatedExperience] = await db.update(experiences)
+      .set(experienceData)
+      .where(eq(experiences.id, id))
+      .returning();
+    return updatedExperience;
+  }
+
+  async deleteExperience(id: number): Promise<boolean> {
+    await db.delete(experiences).where(eq(experiences.id, id));
+    return true;
+  }
+
+  async getEducationsByStudentId(studentId: number): Promise<Education[]> {
+    return db.select().from(educations).where(eq(educations.studentId, studentId));
+  }
+
+  async createEducation(education: InsertEducation): Promise<Education> {
+    const [newEducation] = await db.insert(educations).values(education).returning();
+    return newEducation;
+  }
+
+  async updateEducation(id: number, educationData: Partial<Education>): Promise<Education | undefined> {
+    const [updatedEducation] = await db.update(educations)
+      .set(educationData)
+      .where(eq(educations.id, id))
+      .returning();
+    return updatedEducation;
+  }
+
+  async deleteEducation(id: number): Promise<boolean> {
+    await db.delete(educations).where(eq(educations.id, id));
+    return true;
+  }
+
+  async getInternship(id: number): Promise<Internship | undefined> {
+    const [internship] = await db.select().from(internships).where(eq(internships.id, id));
+    return internship;
+  }
+
+  async getInternships(filters?: Partial<Internship>): Promise<Internship[]> {
+    let query = db.select().from(internships).orderBy(desc(internships.createdAt));
+    
+    if (filters) {
+      const conditions = [];
+      
+      if (filters.employerId) {
+        conditions.push(eq(internships.employerId, filters.employerId));
+      }
+      
+      if (filters.location) {
+        conditions.push(eq(internships.location, filters.location));
+      }
+      
+      if (filters.isRemote !== undefined) {
+        conditions.push(eq(internships.isRemote, filters.isRemote));
+      }
+      
+      if (filters.isPartTime !== undefined) {
+        conditions.push(eq(internships.isPartTime, filters.isPartTime));
+      }
+      
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
+      }
+    }
+    
+    return query;
+  }
+
+  async createInternship(internship: InsertInternship): Promise<Internship> {
+    const [newInternship] = await db.insert(internships).values(internship).returning();
+    return newInternship;
+  }
+
+  async updateInternship(id: number, internshipData: Partial<Internship>): Promise<Internship | undefined> {
+    const [updatedInternship] = await db.update(internships)
+      .set(internshipData)
+      .where(eq(internships.id, id))
+      .returning();
+    return updatedInternship;
+  }
+
+  async deleteInternship(id: number): Promise<boolean> {
+    await db.delete(internships).where(eq(internships.id, id));
+    return true;
+  }
+
+  async getJob(id: number): Promise<Job | undefined> {
+    const [job] = await db.select().from(jobs).where(eq(jobs.id, id));
+    return job;
+  }
+
+  async getJobs(filters?: Partial<Job>): Promise<Job[]> {
+    let query = db.select().from(jobs).orderBy(desc(jobs.createdAt));
+    
+    if (filters) {
+      const conditions = [];
+      
+      if (filters.employerId) {
+        conditions.push(eq(jobs.employerId, filters.employerId));
+      }
+      
+      if (filters.location) {
+        conditions.push(eq(jobs.location, filters.location));
+      }
+      
+      if (filters.isRemote !== undefined) {
+        conditions.push(eq(jobs.isRemote, filters.isRemote));
+      }
+      
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
+      }
+    }
+    
+    return query;
+  }
+
+  async createJob(job: InsertJob): Promise<Job> {
+    const [newJob] = await db.insert(jobs).values(job).returning();
+    return newJob;
+  }
+
+  async updateJob(id: number, jobData: Partial<Job>): Promise<Job | undefined> {
+    const [updatedJob] = await db.update(jobs)
+      .set(jobData)
+      .where(eq(jobs.id, id))
+      .returning();
+    return updatedJob;
+  }
+
+  async deleteJob(id: number): Promise<boolean> {
+    await db.delete(jobs).where(eq(jobs.id, id));
+    return true;
+  }
+
+  async getApplication(id: number): Promise<Application | undefined> {
+    const [application] = await db.select().from(applications).where(eq(applications.id, id));
+    return application;
+  }
+
+  async getApplicationsByStudentId(studentId: number): Promise<Application[]> {
+    return db.select().from(applications).where(eq(applications.studentId, studentId));
+  }
+
+  async getApplicationsByInternshipId(internshipId: number): Promise<Application[]> {
+    return db.select()
+      .from(applications)
+      .where(
+        and(
+          eq(applications.internshipId, internshipId),
+          isNull(applications.jobId)
+        )
+      );
+  }
+
+  async getApplicationsByJobId(jobId: number): Promise<Application[]> {
+    return db.select()
+      .from(applications)
+      .where(
+        and(
+          eq(applications.jobId, jobId),
+          isNull(applications.internshipId)
+        )
+      );
+  }
+
+  async createApplication(application: InsertApplication): Promise<Application> {
+    const [newApplication] = await db.insert(applications).values(application).returning();
+    return newApplication;
+  }
+
+  async updateApplication(id: number, applicationData: Partial<Application>): Promise<Application | undefined> {
+    const [updatedApplication] = await db.update(applications)
+      .set(applicationData)
+      .where(eq(applications.id, id))
+      .returning();
+    return updatedApplication;
+  }
+
+  async deleteApplication(id: number): Promise<boolean> {
+    await db.delete(applications).where(eq(applications.id, id));
+    return true;
+  }
+
+  async getCourse(id: number): Promise<Course | undefined> {
+    const [course] = await db.select().from(courses).where(eq(courses.id, id));
+    return course;
+  }
+
+  async getCourses(filters?: Partial<Course>): Promise<Course[]> {
+    let query = db.select().from(courses);
+    
+    if (filters) {
+      const conditions = [];
+      
+      if (filters.instructorId) {
+        conditions.push(eq(courses.instructorId, filters.instructorId));
+      }
+      
+      if (filters.category) {
+        conditions.push(eq(courses.category, filters.category));
+      }
+      
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
+      }
+    }
+    
+    return query;
+  }
+
+  async createCourse(course: InsertCourse): Promise<Course> {
+    const [newCourse] = await db.insert(courses).values(course).returning();
+    return newCourse;
+  }
+
+  async updateCourse(id: number, courseData: Partial<Course>): Promise<Course | undefined> {
+    const [updatedCourse] = await db.update(courses)
+      .set(courseData)
+      .where(eq(courses.id, id))
+      .returning();
+    return updatedCourse;
+  }
+
+  async deleteCourse(id: number): Promise<boolean> {
+    await db.delete(courses).where(eq(courses.id, id));
+    return true;
+  }
+
+  async getEnrollment(id: number): Promise<Enrollment | undefined> {
+    const [enrollment] = await db.select().from(enrollments).where(eq(enrollments.id, id));
+    return enrollment;
+  }
+
+  async getEnrollmentsByStudentId(studentId: number): Promise<Enrollment[]> {
+    return db.select().from(enrollments).where(eq(enrollments.studentId, studentId));
+  }
+
+  async getEnrollmentsByCourseId(courseId: number): Promise<Enrollment[]> {
+    return db.select().from(enrollments).where(eq(enrollments.courseId, courseId));
+  }
+
+  async createEnrollment(enrollment: InsertEnrollment): Promise<Enrollment> {
+    const [newEnrollment] = await db.insert(enrollments).values(enrollment).returning();
+    return newEnrollment;
+  }
+
+  async updateEnrollment(id: number, enrollmentData: Partial<Enrollment>): Promise<Enrollment | undefined> {
+    const [updatedEnrollment] = await db.update(enrollments)
+      .set(enrollmentData)
+      .where(eq(enrollments.id, id))
+      .returning();
+    return updatedEnrollment;
+  }
+
+  async deleteEnrollment(id: number): Promise<boolean> {
+    await db.delete(enrollments).where(eq(enrollments.id, id));
+    return true;
+  }
+}
+
+// Use database storage instead of memory storage
+export const storage = new DatabaseStorage();
