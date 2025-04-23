@@ -49,7 +49,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     try {
       setLoading(true);
-      const response = await apiRequest('POST', '/api/auth/login', { email, password });
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Login failed');
+      }
+      
       const userData = await response.json();
       
       setUser(userData);
@@ -75,7 +88,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (data: RegisterFormData) => {
     try {
       setLoading(true);
-      const response = await apiRequest('POST', '/api/auth/register', data);
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Registration failed');
+      }
+      
       const userData = await response.json();
       
       setUser(userData);
@@ -101,7 +127,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     try {
       setLoading(true);
-      await apiRequest('POST', '/api/auth/logout', {});
+      const response = await fetch('/api/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Logout failed');
+      }
       
       setUser(null);
       toast({
@@ -124,7 +158,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const updateUser = async (data: Partial<User>) => {
     try {
       setLoading(true);
-      const response = await apiRequest('PUT', '/api/auth/me', data);
+      const response = await fetch('/api/user', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Update failed');
+      }
+      
       const updatedUser = await response.json();
       
       setUser(prev => prev ? { ...prev, ...updatedUser } : updatedUser);
