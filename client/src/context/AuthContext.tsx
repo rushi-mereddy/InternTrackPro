@@ -9,10 +9,10 @@ console.log("AuthContext.tsx: Loading module");
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: false,
-  login: async () => { throw new Error("Not implemented"); },
-  register: async () => { throw new Error("Not implemented"); },
-  logout: async () => { throw new Error("Not implemented"); },
-  updateUser: async () => { throw new Error("Not implemented"); }
+  login: async () => { throw new Error("AuthContext not initialized"); },
+  register: async () => { throw new Error("AuthContext not initialized"); },
+  logout: async () => { throw new Error("AuthContext not initialized"); },
+  updateUser: async () => { throw new Error("AuthContext not initialized"); }
 });
 
 // Provider component
@@ -88,12 +88,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (data: RegisterFormData) => {
     try {
       setLoading(true);
+      
+      // Create a new object with only the fields expected by the server
+      const registerData = {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        password: data.password,
+        userType: data.userType
+      };
+      
+      console.log('Sending registration data:', registerData);
+      
       const response = await fetch('/api/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(registerData),
         credentials: 'include',
       });
       
@@ -112,6 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       return userData;
     } catch (error) {
+      console.error('Registration error details:', error);
       toast({
         title: "Registration failed",
         description: error instanceof Error ? error.message : "Registration failed. Please try again.",
