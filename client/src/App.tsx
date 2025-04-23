@@ -46,7 +46,7 @@ function App() {
             <Route path="/register" component={Register} />
             
             {/* Protected Routes - Only accessible if user is logged in */}
-            {auth.user && (
+            {auth && auth.user && (
               <Switch>
                 <Route path="/dashboard" component={Dashboard} />
                 <Route path="/profile" component={Profile} />

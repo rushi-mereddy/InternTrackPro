@@ -9,10 +9,10 @@ console.log("AuthContext.tsx: Loading module");
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: false,
-  login: async () => { throw new Error("AuthContext not initialized"); },
-  register: async () => { throw new Error("AuthContext not initialized"); },
-  logout: async () => { throw new Error("AuthContext not initialized"); },
-  updateUser: async () => { throw new Error("AuthContext not initialized"); }
+  login: async () => { throw new Error("AuthContext login not initialized"); },
+  register: async () => { throw new Error("AuthContext register not initialized"); },
+  logout: async () => { throw new Error("AuthContext logout not initialized"); },
+  updateUser: async () => { throw new Error("AuthContext updateUser not initialized"); }
 });
 
 // Provider component
@@ -220,7 +220,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 }
 
 // Custom hook for using the auth context
-export function useAuth() {
+export function useAuth(): AuthContextType {
   console.log("useAuth: Hook called");
   const context = useContext(AuthContext);
   console.log("useAuth: Context value", context);

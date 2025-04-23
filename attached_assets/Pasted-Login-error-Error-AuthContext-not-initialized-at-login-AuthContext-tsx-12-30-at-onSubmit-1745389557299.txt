@@ -1,0 +1,33 @@
+Login error: Error: AuthContext not initialized
+    at login (AuthContext.tsx:12:30)
+    at onSubmit (LoginForm.tsx:37:13)
+    at chunk-4BFJKWC4.js?v=e733f47e:1465:15
+onSubmit @ LoginForm.tsx:40
+await in onSubmit
+(anonymous) @ chunk-4BFJKWC4.js?v=e733f47e:1465
+await in (anonymous)
+callCallback2 @ chunk-RPCDYKBN.js?v=e733f47e:3674
+invokeGuardedCallbackDev @ chunk-RPCDYKBN.js?v=e733f47e:3699
+invokeGuardedCallback @ chunk-RPCDYKBN.js?v=e733f47e:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-RPCDYKBN.js?v=e733f47e:3736
+executeDispatch @ chunk-RPCDYKBN.js?v=e733f47e:7014
+processDispatchQueueItemsInOrder @ chunk-RPCDYKBN.js?v=e733f47e:7034
+processDispatchQueue @ chunk-RPCDYKBN.js?v=e733f47e:7043
+dispatchEventsForPlugins @ chunk-RPCDYKBN.js?v=e733f47e:7051
+(anonymous) @ chunk-RPCDYKBN.js?v=e733f47e:7174
+batchedUpdates$1 @ chunk-RPCDYKBN.js?v=e733f47e:18913
+batchedUpdates @ chunk-RPCDYKBN.js?v=e733f47e:3579
+dispatchEventForPluginEventSystem @ chunk-RPCDYKBN.js?v=e733f47e:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-RPCDYKBN.js?v=e733f47e:5478
+dispatchEvent @ chunk-RPCDYKBN.js?v=e733f47e:5472
+dispatchDiscreteEvent @ chunk-RPCDYKBN.js?v=e733f47e:5449Understand this error
+AuthContext.tsx:20 AuthProvider: Component rendering
+AuthContext.tsx:218 AuthProvider: Providing context {user: null, loading: false, login: ƒ, register: ƒ, logout: ƒ, …}
+AuthContext.tsx:224 useAuth: Hook called
+AuthContext.tsx:226 useAuth: Context value {user: null, loading: false, login: ƒ, register: ƒ, logout: ƒ, …}
+AuthContext.tsx:224 useAuth: Hook called
+AuthContext.tsx:226 useAuth: Context value {user: null, loading: false, login: ƒ, register: ƒ, logout: ƒ, …}
+AuthContext.tsx:20 AuthProvider: Component rendering
+AuthContext.tsx:218 AuthProvider: Providing context {user: null, loading: false, login: ƒ, register: ƒ, logout: ƒ, …}
+AuthContext.tsx:224 useAuth: Hook called
+AuthContext.tsx:226 useAuth: Context value {user: null, loading: false, login: ƒ, register: ƒ, logout: ƒ, …}
