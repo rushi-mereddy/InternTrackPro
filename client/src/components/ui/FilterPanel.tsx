@@ -144,7 +144,7 @@ const FilterPanel = ({ type, onFilter, defaultFilters = {} }: FilterPanelProps) 
                   <SelectValue placeholder="Select location" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Any Location</SelectItem>
+                  <SelectItem value="any">Any Location</SelectItem>
                   {LOCATIONS.map((location) => (
                     <SelectItem key={location} value={location}>
                       {location}
@@ -225,7 +225,7 @@ const FilterPanel = ({ type, onFilter, defaultFilters = {} }: FilterPanelProps) 
                   <SelectValue placeholder="Select duration" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Any Duration</SelectItem>
+                  <SelectItem value="any">Any Duration</SelectItem>
                   {DURATION_OPTIONS.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
@@ -279,7 +279,7 @@ const FilterPanel = ({ type, onFilter, defaultFilters = {} }: FilterPanelProps) 
                   <SelectValue placeholder="Select experience" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Any Experience</SelectItem>
+                  <SelectItem value="any">Any Experience</SelectItem>
                   <SelectItem value="0">0 Years</SelectItem>
                   <SelectItem value="1">1+ Years</SelectItem>
                   <SelectItem value="2">2+ Years</SelectItem>
@@ -335,7 +335,7 @@ const FilterPanel = ({ type, onFilter, defaultFilters = {} }: FilterPanelProps) 
                     <SelectValue placeholder="Select course type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Courses</SelectItem>
+                    <SelectItem value="all">All Courses</SelectItem>
                     <SelectItem value="certification">Certification Courses</SelectItem>
                     <SelectItem value="placement_guarantee">Placement Guarantee Courses</SelectItem>
                   </SelectContent>
@@ -367,7 +367,7 @@ const FilterPanel = ({ type, onFilter, defaultFilters = {} }: FilterPanelProps) 
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Categories</SelectItem>
+                    <SelectItem value="all">All Categories</SelectItem>
                     <SelectItem value="programming">Programming</SelectItem>
                     <SelectItem value="data_science">Data Science</SelectItem>
                     <SelectItem value="marketing">Marketing</SelectItem>

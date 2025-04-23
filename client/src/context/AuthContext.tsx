@@ -27,7 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     console.log("AuthProvider: Running useEffect");
     async function checkAuthStatus() {
       try {
-        const response = await fetch('/api/auth/me', {
+        const response = await fetch('/api/user', {
           credentials: 'include',
         });
         
@@ -88,7 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (data: RegisterFormData) => {
     try {
       setLoading(true);
-      const response = await fetch('/api/auth/register', {
+      const response = await fetch('/api/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
