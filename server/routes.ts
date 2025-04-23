@@ -95,7 +95,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   };
 
   // Authentication routes
-  app.post('/api/auth/register', async (req, res) => {
+  app.post('/api/register', async (req, res) => {
     try {
       const validatedUser = insertUserSchema.parse(req.body);
       const existingUser = await storage.getUserByEmail(validatedUser.email);
@@ -147,7 +147,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/auth/login', (req, res, next) => {
+  app.post('/api/login', (req, res, next) => {
     passport.authenticate('local', (err, user, info) => {
       if (err) {
         return next(err);
@@ -170,13 +170,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     })(req, res, next);
   });
 
-  app.post('/api/auth/logout', (req, res) => {
+  app.post('/api/logout', (req, res) => {
     req.logout(() => {
       res.json({ message: "Logged out successfully" });
     });
   });
 
-  app.get('/api/auth/me', (req, res) => {
+  app.get('/api/user', (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "Not authenticated" });
     }
