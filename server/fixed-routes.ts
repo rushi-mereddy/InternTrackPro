@@ -25,6 +25,7 @@ import { pool } from "./db";
 const THIRTY_DAYS = 1000 * 60 * 60 * 24 * 7; // One week instead of 30 days
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  console.log('Registering routes...');
   const httpServer = createServer(app);
 
   // Setup session storage with PostgreSQL
@@ -36,7 +37,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     resave: false,
     saveUninitialized: false,
     cookie: {
-      maxAge: THIRTY_DAYS
+      maxAge: THIRTY_DAYS,
+      secure: false, // Set to false for development
+      httpOnly: true,
+      sameSite: 'lax',
+      path: '/'
     },
     store: new PgSession({
       pool,
@@ -94,8 +99,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(401).json({ message: "Unauthorized" });
   };
 
+  console.log('Setting up authentication routes...');
+
   // Authentication routes
   app.post('/api/auth/register', async (req, res) => {
+    console.log('Registration request received:', req.body);
     try {
       const validatedUser = insertUserSchema.parse(req.body);
       const existingUser = await storage.getUserByEmail(validatedUser.email);
@@ -140,6 +148,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       });
     } catch (error) {
+      console.error('Registration error:', error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Validation error", errors: error.errors });
       }
@@ -351,7 +360,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Student profile not found" });
       }
       
-      const validatedExperience = insertExperienceSchema.parse({ ...req.body, studentId: profile.id });
+      const experienceData = {
+        ...req.body,
+        studentId: profile.id,
+        startDate: req.body.startDate ? new Date(req.body.startDate) : null,
+        endDate: req.body.isCurrent ? null : (req.body.endDate ? new Date(req.body.endDate) : null)
+      };
+      
+      const validatedExperience = insertExperienceSchema.parse(experienceData);
       const experience = await storage.createExperience(validatedExperience);
       res.status(201).json(experience);
     } catch (error) {

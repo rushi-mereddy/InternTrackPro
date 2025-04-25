@@ -175,6 +175,7 @@ export interface InternshipFilters {
   durationMonths?: number;
   jobOfferPossibility?: boolean;
   skills?: string[];
+  searchQuery?: string;
 }
 
 export interface JobFilters {

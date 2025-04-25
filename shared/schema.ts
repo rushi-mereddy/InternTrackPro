@@ -71,15 +71,19 @@ export const experiences = pgTable("experiences", {
   title: text("title").notNull(),
   company: text("company").notNull(),
   location: text("location"),
-  startDate: date("start_date"),
-  endDate: date("end_date"),
+  startDate: date("start_date", { mode: "date" }),
+  endDate: date("end_date", { mode: "date" }),
   isCurrent: boolean("is_current"),
   description: text("description"),
   type: text("type"), // job, internship, project
 });
 
 export const insertExperienceSchema = createInsertSchema(experiences)
-  .omit({ id: true });
+  .omit({ id: true })
+  .extend({
+    startDate: z.string().nullable(),
+    endDate: z.string().nullable(),
+  });
 
 // Student Education
 export const educations = pgTable("educations", {

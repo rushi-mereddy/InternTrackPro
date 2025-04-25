@@ -14,68 +14,29 @@ const Internships = () => {
 
   // Fetch internships
   const { data: internships = [], isLoading, error } = useQuery({
-    queryKey: ['/api/internships'],
-  });
-
-  // Filter internships based on selected filters
-  const filteredInternships = internships.filter((internship: any) => {
-    // Location filter
-    if (filters.location && internship.location !== filters.location && 
-        !(filters.location === 'Work from Home' && internship.isRemote)) {
-      return false;
-    }
-
-    // Work from home filter
-    if (filters.isRemote && !internship.isRemote) {
-      return false;
-    }
-
-    // Part-time filter
-    if (filters.isPartTime && !internship.isPartTime) {
-      return false;
-    }
-
-    // Min stipend filter
-    if (filters.minStipend && internship.stipendAmount < filters.minStipend) {
-      return false;
-    }
-
-    // Duration filter
-    if (filters.durationMonths && internship.durationMonths.toString() !== filters.durationMonths) {
-      return false;
-    }
-
-    // Job offer possibility filter
-    if (filters.jobOfferPossibility && !internship.jobOfferPossibility) {
-      return false;
-    }
-
-    // Skills filter
-    if (filters.skills && filters.skills.length > 0) {
-      const internshipSkills = internship.skillsRequired || [];
-      if (!filters.skills.every(skill => 
-        internshipSkills.some((s: string) => 
-          s.toLowerCase().includes(skill.toLowerCase())
-        )
-      )) {
-        return false;
-      }
-    }
-
-    // Search query
-    if (filters.searchQuery) {
-      const query = filters.searchQuery.toLowerCase();
-      const titleMatch = internship.title.toLowerCase().includes(query);
-      const descriptionMatch = internship.description?.toLowerCase().includes(query);
-      const companyMatch = internship.employer?.companyName.toLowerCase().includes(query);
+    queryKey: ['/api/internships', filters],
+    queryFn: async () => {
+      const searchParams = new URLSearchParams();
       
-      if (!titleMatch && !descriptionMatch && !companyMatch) {
-        return false;
-      }
-    }
+      if (filters.location) searchParams.set('location', filters.location);
+      if (filters.isRemote) searchParams.set('isRemote', 'true');
+      if (filters.isPartTime) searchParams.set('isPartTime', 'true');
+      if (filters.minStipend) searchParams.set('minStipend', filters.minStipend.toString());
+      if (filters.durationMonths) searchParams.set('durationMonths', filters.durationMonths.toString());
+      if (filters.jobOfferPossibility) searchParams.set('jobOfferPossibility', 'true');
+      if (filters.skills?.length) searchParams.set('skills', filters.skills.join(','));
+      if (filters.searchQuery) searchParams.set('searchQuery', filters.searchQuery);
 
-    return true;
+      const response = await fetch(`/api/internships?${searchParams.toString()}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch internships');
+      }
+      return response.json();
+    }
   });
+
+  // Remove the client-side filtering since it's now handled by the backend
+  const filteredInternships = internships;
 
   // Pagination
   const totalPages = Math.ceil(filteredInternships.length / perPage);

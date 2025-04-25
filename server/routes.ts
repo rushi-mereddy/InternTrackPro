@@ -147,7 +147,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/login', (req, res, next) => {
+  app.post('/api/auth/login', (req, res, next) => {
     passport.authenticate('local', (err, user, info) => {
       if (err) {
         return next(err);
@@ -479,11 +479,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Internship routes
   app.get('/api/internships', async (req, res) => {
     try {
+      const filters = {
+        location: req.query.location as string | undefined,
+        isRemote: req.query.isRemote === 'true',
+        isPartTime: req.query.isPartTime === 'true',
+        minStipend: req.query.minStipend ? parseInt(req.query.minStipend as string) : undefined,
+        durationMonths: req.query.durationMonths ? parseInt(req.query.durationMonths as string) : undefined,
+        jobOfferPossibility: req.query.jobOfferPossibility === 'true',
+        skills: req.query.skills ? (req.query.skills as string).split(',') : undefined
+      };
+
       const internships = await storage.getInternships();
+      
+      // Apply filters
+      const filteredInternships = internships.filter(internship => {
+        // Location filter
+        if (filters.location && internship.location !== filters.location && 
+            !(filters.location === 'Work from Home' && internship.isRemote)) {
+          return false;
+        }
+
+        // Work from home filter
+        if (filters.isRemote && !internship.isRemote) {
+          return false;
+        }
+
+        // Part-time filter
+        if (filters.isPartTime && !internship.isPartTime) {
+          return false;
+        }
+
+        // Min stipend filter
+        if (filters.minStipend && (!internship.stipendAmount || internship.stipendAmount < filters.minStipend)) {
+          return false;
+        }
+
+        // Duration filter
+        if (filters.durationMonths && internship.durationMonths !== filters.durationMonths) {
+          return false;
+        }
+
+        // Job offer possibility filter
+        if (filters.jobOfferPossibility && !internship.jobOfferPossibility) {
+          return false;
+        }
+
+        // Skills filter
+        if (filters.skills && filters.skills.length > 0) {
+          const internshipSkills = internship.skillsRequired || [];
+          if (!filters.skills.every(skill => 
+            internshipSkills.some(s => s.toLowerCase().includes(skill.toLowerCase()))
+          )) {
+            return false;
+          }
+        }
+
+        return true;
+      });
       
       // Get employer data for each internship
       const internshipsWithEmployer = await Promise.all(
-        internships.map(async (internship) => {
+        filteredInternships.map(async (internship) => {
           const employer = await storage.getEmployerProfile(internship.employerId);
           return {
             ...internship,

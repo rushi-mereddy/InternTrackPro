@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -17,7 +17,7 @@ const loginSchema = z.object({
 });
 
 const LoginForm = () => {
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [isLoading, setIsLoading] = useState(false);
@@ -31,11 +31,18 @@ const LoginForm = () => {
     },
   });
 
+  // Add effect to handle navigation after successful login
+  useEffect(() => {
+    if (user) {
+      setLocation('/dashboard');
+    }
+  }, [user, setLocation]);
+
   const onSubmit = async (values: z.infer<typeof loginSchema>) => {
     setIsLoading(true);
     try {
       await login(values.email, values.password);
-      setLocation('/dashboard');
+      // Navigation will be handled by the useEffect
     } catch (error) {
       console.error('Login error:', error);
       toast({
@@ -113,7 +120,7 @@ const LoginForm = () => {
             </div>
             <Button 
               type="submit" 
-              className="w-full bg-primary-600 hover:bg-primary-700"
+              className="w-full"
               disabled={isLoading}
             >
               {isLoading ? (

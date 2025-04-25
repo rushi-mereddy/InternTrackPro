@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { AuthContextType, User, RegisterFormData } from "../lib/types";
 import { apiRequest } from "../lib/queryClient";
 import { useToast } from "../hooks/use-toast";
@@ -24,72 +24,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Check if user is already logged in
   useEffect(() => {
-    console.log("AuthProvider: Running useEffect");
-    async function checkAuthStatus() {
+    const checkAuth = async () => {
       try {
-        const response = await fetch('/api/user', {
+        setLoading(true);
+        const response = await fetch('/api/auth/me', {
           credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
         });
-        
+
         if (response.ok) {
-          const userData = await response.json();
-          setUser(userData);
+          const data = await response.json();
+          setUser(data);
+        } else {
+          setUser(null);
         }
       } catch (error) {
-        console.error('Authentication check failed:', error);
+        console.error('Auth check failed:', error);
+        setUser(null);
       } finally {
         setLoading(false);
       }
-    }
-    
-    checkAuthStatus();
+    };
+
+    checkAuth();
   }, []);
 
-  // Login function
-  const login = async (email: string, password: string) => {
-    try {
-      setLoading(true);
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-        credentials: 'include',
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Login failed');
-      }
-      
-      const userData = await response.json();
-      
-      setUser(userData);
-      toast({
-        title: "Login successful",
-        description: `Welcome back, ${userData.firstName}!`,
-      });
-      
-      return userData;
-    } catch (error) {
-      toast({
-        title: "Login failed",
-        description: error instanceof Error ? error.message : "Invalid credentials",
-        variant: "destructive",
-      });
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // Register function
-  const register = async (data: RegisterFormData) => {
+  const register = useCallback(async (data: RegisterFormData) => {
     try {
       setLoading(true);
       
-      // Create a new object with only the fields expected by the server
       const registerData = {
         firstName: data.firstName,
         lastName: data.lastName,
@@ -97,8 +63,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         password: data.password,
         userType: data.userType
       };
-      
-      console.log('Sending registration data:', registerData);
       
       const response = await fetch('/api/register', {
         method: 'POST',
@@ -115,8 +79,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       
       const userData = await response.json();
-      
       setUser(userData);
+      
       toast({
         title: "Registration successful",
         description: `Welcome, ${userData.firstName}!`,
@@ -124,7 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       return userData;
     } catch (error) {
-      console.error('Registration error details:', error);
+      console.error('Registration error:', error);
       toast({
         title: "Registration failed",
         description: error instanceof Error ? error.message : "Registration failed. Please try again.",
@@ -134,15 +98,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
+  }, [toast]);
+
+  // Login function
+  const login = async (email: string, password: string) => {
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Login failed');
+      }
+
+      const data = await response.json();
+      setUser(data);
+      return data;
+    } catch (error) {
+      console.error('Login failed:', error);
+      throw error;
+    }
   };
 
   // Logout function
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/logout', {
+      const response = await fetch('http://localhost:5000/api/auth/logout', {
         method: 'POST',
         credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
       
       if (!response.ok) {
@@ -165,10 +158,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
   // Update user function
-  const updateUser = async (data: Partial<User>) => {
+  const updateUser = useCallback(async (data: Partial<User>) => {
     try {
       setLoading(true);
       const response = await fetch('/api/user', {
@@ -186,8 +179,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       
       const updatedUser = await response.json();
-      
       setUser(prev => prev ? { ...prev, ...updatedUser } : updatedUser);
+      
       toast({
         title: "Profile updated",
         description: "Your profile has been successfully updated.",
@@ -204,7 +197,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
   const value: AuthContextType = {
     user,
@@ -224,5 +217,8 @@ export function useAuth(): AuthContextType {
   console.log("useAuth: Hook called");
   const context = useContext(AuthContext);
   console.log("useAuth: Context value", context);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
   return context;
 }
