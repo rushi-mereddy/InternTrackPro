@@ -213,7 +213,7 @@ const RegisterForm = () => {
             />
             <Button 
               type="submit" 
-              className="w-full bg-primary-600 hover:bg-primary-700"
+              className="w-full"
               disabled={isLoading}
             >
               {isLoading ? (

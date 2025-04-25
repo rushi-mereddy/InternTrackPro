@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getInitials } from '@/lib/utils';
 import { 
   LayoutDashboard, User, Briefcase, BookOpen, 
-  Settings, ChevronRight, LogOut
+  Settings, ChevronRight, LogOut, Building2, GraduationCap, Bell
 } from 'lucide-react';
 
 interface SidebarProps {

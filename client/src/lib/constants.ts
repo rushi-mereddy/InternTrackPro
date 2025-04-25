@@ -52,7 +52,7 @@ export const NAV_ITEMS = [
   { label: 'Internships', path: '/internships' },
   { label: 'Jobs', path: '/jobs' },
   { label: 'Courses', path: '/courses', badge: 'OFFER' },
-  { label: 'Trainings', path: '/trainings' }
+  { label: 'Training', path: '/training' }
 ];
 
 // Trending Categories
